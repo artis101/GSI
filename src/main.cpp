@@ -8,13 +8,24 @@
 // Declaration for an SSD1306 display connected to I2C (SDA, SCL pins)
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire);
 
+// last update timestamp
+unsigned long lastUpdate = 0;
+
 // Configurable layout variables
 int circleDiameter = 8;
 int spacingBetweenElements = 20;
 int centerlineWidth = 20;
 
 bool goingDown = true;
-int positionPercentage = 50;
+bool goingRight = true;
+
+int verticalPositionPercentage = 50;
+int horizontalPositionPercentage = 50;
+
+void drawCenterCircle() {
+  display.drawCircle(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, circleDiameter * 1.5,
+                     WHITE);
+}
 
 void drawVerticalPattern() {
   int totalElements = 5; // Four circles and one vertical line
@@ -24,10 +35,10 @@ void drawVerticalPattern() {
   int startX = (SCREEN_WIDTH - totalWidth) / 2; // Horizontal margin
 
   // Draw a vertical separator line in the middle of the screen
-  display.drawFastVLine(SCREEN_WIDTH / 2,
+  /*display.drawFastVLine(SCREEN_WIDTH / 2,
                         SCREEN_HEIGHT / 2 - centerlineWidth +
                             3, // fugly magic number fix later
-                        centerlineWidth, WHITE);
+                        centerlineWidth, WHITE);*/
 
   // Draw the circles
   for (int i = 0; i < 4; i++) {
@@ -46,33 +57,52 @@ void drawVerticalPattern() {
   }
 }
 
-void drawIndicatorTriangle(int positionPercentage) {
-  // Clear previous drawings but keep the static elements
-  display.clearDisplay(); // Optionally, clear only the part of the display
-                          // where the triangle moves
-  drawVerticalPattern();  // Redraw the static pattern if needed
+void drawHorizontalIndicator(int positionPercentage) {
+  // Dimensions for the line
+  int lineThickness = 1; // Thickness of the horizontal line
+  int dashLength = 12;   // Length of each dash
+  int gapLength = 4;     // Length of the gap between dashes
 
+  // Calculate the Y position for the line based on the percentage
+  int yPos = map(positionPercentage, 0, 100, 0, SCREEN_HEIGHT - lineThickness);
+
+  // // Draw the dashed horizontal line
+  for (int x = 0; x < SCREEN_WIDTH; x += (dashLength + gapLength)) {
+    // Draw each segment of the dash
+    display.drawFastHLine(x, yPos, dashLength, WHITE);
+  }
+}
+
+void drawVerticalIndicator(int positionPercentage) {
   // Dimensions and position calculation for the triangle
-  int triangleBaseWidth = 10; // Width of the triangle base
-  int triangleHeight = 16;    // Height of the triangle
+  int triangleBaseWidth = 8; // Width of the triangle base
+  int triangleHeight = 12;   // Height of the triangle
+  int offsetY = 16;          // Offset to adjust the triangle position
 
   // Calculate the X position for the triangle based on the percentage
   int xPosition =
       map(positionPercentage, 0, 100, 0, SCREEN_WIDTH - triangleBaseWidth);
 
-  // Coordinates for the triangle
-  int x1 = xPosition;                            // Left corner of the base
-  int x2 = xPosition + triangleBaseWidth;        // Right corner of the base
-  int x3 = xPosition + (triangleBaseWidth / 2);  // Top point of the triangle
-  int y1 = (SCREEN_HEIGHT / 2) + triangleHeight; // Base level Y coordinate
-  int y2 = (SCREEN_HEIGHT / 2) + triangleHeight; // Base level Y coordinate
-  int y3 = (SCREEN_HEIGHT / 2);                  // Top point Y coordinate
+  // Coordinates for the triangle pointing upwards
+  int x1 = xPosition;                           // Left corner of the base
+  int x2 = xPosition + triangleBaseWidth;       // Right corner of the base
+  int x3 = xPosition + (triangleBaseWidth / 2); // Top point of the triangle
+  int y1 = (SCREEN_HEIGHT / 2) - triangleHeight -
+           offsetY; // Base level Y coordinate, adjusted
+                    // for upward orientation
+  int y2 = (SCREEN_HEIGHT / 2) - triangleHeight -
+           offsetY; // Base level Y coordinate, adjusted
+                    // for upward orientation
+  int y3 = (SCREEN_HEIGHT / 2) -
+           offsetY; // Top point Y coordinate, remains the centerline Y
 
   // Draw the triangle
   display.fillTriangle(x1, y1, x2, y2, x3, y3, WHITE);
+}
 
-  // Display the updates
-  display.display();
+void drawAirplane() {
+  // Placeholder for the airplane drawing
+  // display.drawBitmap(0, 0, airplane, 128, 64, WHITE);
 }
 
 void setup() {
@@ -85,31 +115,51 @@ void setup() {
       ; // Don't proceed, loop forever
   }
 
-  display.clearDisplay();
   display.setTextColor(WHITE);
+  display.ssd1306_command(SSD1306_SETCONTRAST);
+  display.ssd1306_command(0x8F);
+}
 
-  // Draw the initial pattern
+void drawUI() {
+  display.clearDisplay();
   drawVerticalPattern();
+  drawCenterCircle();
+  drawVerticalIndicator(verticalPositionPercentage);
+  drawHorizontalIndicator(horizontalPositionPercentage);
   display.display();
 }
 
-void loop() {
-  // Move the indicator triangle around 50 percent
+void fakeMovement() {
   if (goingDown) {
-    positionPercentage--;
+    verticalPositionPercentage--;
   } else {
-    positionPercentage++;
+    verticalPositionPercentage++;
   }
 
-  // Check if the triangle reached the edges
-  if (positionPercentage <= 40) {
+  if (verticalPositionPercentage <= 40) {
     goingDown = false;
-  } else if (positionPercentage >= 60) {
+  } else if (verticalPositionPercentage >= 60) {
     goingDown = true;
   }
 
-  // Draw the updated triangle
-  drawIndicatorTriangle(positionPercentage);
+  if (goingRight) {
+    horizontalPositionPercentage++;
+  } else {
+    horizontalPositionPercentage--;
+  }
 
-  delay(10); // Just a simple delay, adjust as necessary for your application
+  // Check if the triangle reached the edges
+  if (horizontalPositionPercentage <= 30) {
+    goingRight = true;
+  } else if (horizontalPositionPercentage >= 70) {
+    goingRight = false;
+  }
+}
+
+void loop() {
+  if (millis() - lastUpdate > (1000 / 30)) {
+    fakeMovement();
+    drawUI();
+    lastUpdate = millis();
+  }
 }
