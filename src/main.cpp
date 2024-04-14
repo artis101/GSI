@@ -14,7 +14,7 @@ int spacingBetweenElements = 20;
 int centerlineWidth = 20;
 
 bool goingDown = true;
-int positionPercentage = 0;
+int positionPercentage = 50;
 
 void drawVerticalPattern() {
   int totalElements = 5; // Four circles and one vertical line
@@ -94,20 +94,22 @@ void setup() {
 }
 
 void loop() {
-  // Move the triangle indicator
-  drawIndicatorTriangle(positionPercentage);
-
+  // Move the indicator triangle around 50 percent
   if (goingDown) {
-    positionPercentage += 1;
+    positionPercentage--;
   } else {
-    positionPercentage -= 1;
+    positionPercentage++;
   }
 
-  if (positionPercentage >= 100) {
+  // Check if the triangle reached the edges
+  if (positionPercentage <= 40) {
     goingDown = false;
-  } else if (positionPercentage <= 0) {
+  } else if (positionPercentage >= 60) {
     goingDown = true;
   }
+
+  // Draw the updated triangle
+  drawIndicatorTriangle(positionPercentage);
 
   delay(10); // Just a simple delay, adjust as necessary for your application
 }
