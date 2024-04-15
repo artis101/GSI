@@ -23,14 +23,14 @@ int verticalPositionPercentage = 50;
 int horizontalPositionPercentage = 50;
 
 void drawCenterCircle() {
-  display.drawCircle(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, circleDiameter * 1.5,
-                     WHITE);
+  display.drawCircle(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2 - 1, 15, WHITE);
 }
 
 void drawVerticalPattern() {
   int totalElements = 5; // Four circles and one vertical line
   int totalSpacing = (totalElements - 1) * spacingBetweenElements;
   int totalWidth = 4 * circleDiameter + totalSpacing;
+  int offsetY = 12; // Vertical to offset the pattern from center
 
   int startX = (SCREEN_WIDTH - totalWidth) / 2; // Horizontal margin
 
@@ -46,8 +46,8 @@ void drawVerticalPattern() {
     }
 
     display.drawCircle(xOffset + (circleDiameter / 2),
-                       SCREEN_HEIGHT / 2 - circleDiameter, circleDiameter / 2,
-                       WHITE);
+                       SCREEN_HEIGHT / 2 - circleDiameter - offsetY,
+                       circleDiameter / 2, WHITE);
   }
 }
 
@@ -154,7 +154,7 @@ void fakeMovement() {
 
 void loop() {
   if (millis() - lastUpdate > (1000 / 30)) {
-    fakeMovement();
+    // fakeMovement();
     drawUI();
     lastUpdate = millis();
   }
