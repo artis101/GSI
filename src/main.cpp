@@ -34,12 +34,6 @@ void drawVerticalPattern() {
 
   int startX = (SCREEN_WIDTH - totalWidth) / 2; // Horizontal margin
 
-  // Draw a vertical separator line in the middle of the screen
-  /*display.drawFastVLine(SCREEN_WIDTH / 2,
-                        SCREEN_HEIGHT / 2 - centerlineWidth +
-                            3, // fugly magic number fix later
-                        centerlineWidth, WHITE);*/
-
   // Draw the circles
   for (int i = 0; i < 4; i++) {
     // Calculate the horizontal offset
@@ -60,8 +54,8 @@ void drawVerticalPattern() {
 void drawHorizontalIndicator(int positionPercentage) {
   // Dimensions for the line
   int lineThickness = 1; // Thickness of the horizontal line
-  int dashLength = 12;   // Length of each dash
-  int gapLength = 4;     // Length of the gap between dashes
+  int dashLength = 4;    // Length of each dash
+  int gapLength = 2;     // Length of the gap between dashes
 
   // Calculate the Y position for the line based on the percentage
   int yPos = map(positionPercentage, 0, 100, 0, SCREEN_HEIGHT - lineThickness);
@@ -75,9 +69,9 @@ void drawHorizontalIndicator(int positionPercentage) {
 
 void drawVerticalIndicator(int positionPercentage) {
   // Dimensions and position calculation for the triangle
-  int triangleBaseWidth = 8; // Width of the triangle base
-  int triangleHeight = 12;   // Height of the triangle
-  int offsetY = 16;          // Offset to adjust the triangle position
+  int triangleBaseWidth = 6; // Width of the triangle base
+  int triangleHeight = 9;    // Height of the triangle
+  int offsetY = 24;          // Offset to adjust the triangle position
 
   // Calculate the X position for the triangle based on the percentage
   int xPosition =
@@ -88,16 +82,18 @@ void drawVerticalIndicator(int positionPercentage) {
   int x2 = xPosition + triangleBaseWidth;       // Right corner of the base
   int x3 = xPosition + (triangleBaseWidth / 2); // Top point of the triangle
   int y1 = (SCREEN_HEIGHT / 2) - triangleHeight -
-           offsetY; // Base level Y coordinate, adjusted
-                    // for upward orientation
+           offsetY; // Base level Y coordinate, adjusted for upward orientation
   int y2 = (SCREEN_HEIGHT / 2) - triangleHeight -
-           offsetY; // Base level Y coordinate, adjusted
-                    // for upward orientation
+           offsetY; // Base level Y coordinate, adjusted for upward orientation
   int y3 = (SCREEN_HEIGHT / 2) -
            offsetY; // Top point Y coordinate, remains the centerline Y
 
   // Draw the triangle
   display.fillTriangle(x1, y1, x2, y2, x3, y3, WHITE);
+
+  // Draw a vertical line at the triangle's x-position
+  display.drawFastVLine(xPosition + triangleBaseWidth / 2, 0, SCREEN_HEIGHT,
+                        WHITE);
 }
 
 void drawAirplane() {
@@ -117,7 +113,7 @@ void setup() {
 
   display.setTextColor(WHITE);
   display.ssd1306_command(SSD1306_SETCONTRAST);
-  display.ssd1306_command(0x8F);
+  display.ssd1306_command(0x47);
 }
 
 void drawUI() {
